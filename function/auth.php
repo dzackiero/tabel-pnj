@@ -1,6 +1,6 @@
 <?php
   session_start();
-  require "config/connection.php";
+  require "../config/connection.php";
 
   $username = $_POST["username"];
   $password = $_POST["password"];

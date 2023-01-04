@@ -1,0 +1,17 @@
+{
+    "name": "dzaky/liveserver",
+    "autoload": {
+        "psr-4": {
+            "Dzaky\\Liveserver\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Dzaky Nashshar",
+            "email": "dzakynashshar@gmail.com"
+        }
+    ],
+    "require": {
+        "phpoffice/phpspreadsheet": "^1.26"
+    }
+}

@@ -65,7 +65,7 @@
         ;
       ?>
       <?php if(isset($_SESSION["login"])): ?>
-      <td><a href="delete_jadwal.php?id=<?= $row[0] ?>" class="text-danger">Delete</a> | <a href="edit.php?<?= $urlQuery ?>" class="text-info">Edit</a></td>
+      <td><a href="function/delete_jadwal.php?id=<?= $row[0] ?>" class="text-danger">Delete</a> | <a href="edit.php?<?= $urlQuery ?>" class="text-info">Edit</a></td>
       <?php endif ?>
     </tr>
     <?php endwhile ?>

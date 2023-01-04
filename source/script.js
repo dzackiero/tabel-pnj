@@ -24,7 +24,7 @@ loginForm.addEventListener('submit', function (e) {
           captchaImage.remove();
           captchaImage = document.createElement('img');
           captchaImage.classList.add('captcha-image');
-          captchaImage.setAttribute('src', 'captcha.php');
+          captchaImage.setAttribute('src', 'function/captcha.php');
           captchaContainer.append(captchaImage);
         }
 
@@ -52,7 +52,7 @@ loginForm.addEventListener('submit', function (e) {
     }
   };
 
-  xhr.open('POST', 'auth.php', true);
+  xhr.open('POST', 'function/auth.php', true);
   xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
   xhr.send(creds);
 });

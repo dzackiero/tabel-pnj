@@ -58,7 +58,7 @@ filter: progid: DXImageTransform.Microsoft.gradient( startColorstr="#6D90B9", en
       </div>
 
       <div class="mb-3 d-flex justify-content-center captcha-container">
-        <img src="captcha.php" alt="captcha" class="captcha-image">
+        <img src="function/captcha.php" alt="captcha" class="captcha-image">
       </div>
 
       <div class="mb-3">

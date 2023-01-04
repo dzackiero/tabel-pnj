@@ -48,7 +48,7 @@
             Hi, <?= ucfirst($_SESSION["username"]) ?>
           </button>
           <ul class="dropdown-menu dropdown-menu-end">
-            <li><a class="dropdown-item" href="logout.php" role="button">Logout</a></li>
+            <li><a class="dropdown-item" href="function/logout.php" role="button">Logout</a></li>
           </ul>
         </div>
       <?php endif ?>
@@ -59,7 +59,7 @@
     <!-- Title -->
     <h1 class="text-center pb-3">Edit Data</h1>
     <div class="container w-50">
-      <form method="POST" action="edit_jadwal.php">
+      <form method="POST" action="function/edit_jadwal.php">
       <input type="hidden" id="id" name="id" value="<?= $id ?>">
       <div class="mb-3">
           <label for="hari" class="form-label">Hari</label>

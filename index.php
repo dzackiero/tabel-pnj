@@ -20,11 +20,22 @@
     $query = "SELECT * FROM mata_kuliah";
     $matkul = mysqli_query($conn, $query);
 
-    $query = "SELECT JA.id, hari, waktu_mulai, waktu_selesai, kelas, ruang, jumlah_jam, tahun_ajaran, semester, mata_kuliah, nama FROM JADWAL AS JA JOIN MATA_KULIAH AS MK ON MK.ID = JA.MATA_KULIAH_ID JOIN DOSEN AS DS ON DS.ID = JA.DOSEN_ID";
-    //$query = "SELECT * FROM JADWAL AS JA JOIN MATA_KULIAH AS MK ON MK.ID = JA.MATA_KULIAH_ID JOIN DOSEN AS DS ON DS.ID = JA.DOSEN_ID";
+    $query = "SELECT id FROM jadwal";
 
     $jadwal = mysqli_query($conn, $query);
-  ?>
+
+
+    //Paginasi
+    $per_page = 5;
+    $data_count = mysqli_num_rows($jadwal);
+    $total_page = ceil($data_count / $per_page);
+    $current_page = isset($_GET["halaman"]) ? $_GET["halaman"] : 1;
+    $first_data = ($per_page * $current_page) - $per_page;
+
+    $query = "SELECT JA.id, hari, waktu_mulai, waktu_selesai, kelas, ruang, jumlah_jam, tahun_ajaran, semester, mata_kuliah, nama FROM JADWAL AS JA JOIN MATA_KULIAH AS MK ON MK.ID = JA.MATA_KULIAH_ID JOIN DOSEN AS DS ON DS.ID = JA.DOSEN_ID LIMIT $first_data, $per_page";
+
+    $jadwal = mysqli_query($conn, $query);
+?>
 
   <!-- Navigation bar -->
 
@@ -39,7 +50,8 @@
           Hi, <?= ucfirst($_SESSION["username"]) ?>
         </button>
         <ul class="dropdown-menu dropdown-menu-end">
-          <li><a class="dropdown-item" href="logout.php" role="button">Logout</a></li>
+          <li><a class="dropdown-item" href="manage.php" role="button">Manajemen Data</a></li>
+          <li><a class="dropdown-item" href="function/logout.php" role="button">Logout</a></li>
         </ul>
       </div>
     <?php endif ?>
@@ -49,7 +61,18 @@
   <main class="p-5 d-flex flex-column gap-3">
     <!-- Title -->
     <h1 class="text-center pb-3">Tabel Jadwal Siswa</h1>
+
+
+    <!-- Excel -->
+    <div class="container d-flex justify-content-center">
+      <form action="function/upload_file.php" method="POST" enctype="multipart/form-data">
+        <label for="excel" class="form-label">Excel</label>
+        <input type="file" class="form-control" id="excel" name="excel" style="width: min-content;">
+        <button type="submit" name="excel">Excel</button>
+      </form>
+    </div>
     
+    <!-- Searchh And Add -->
     <div class="container">
       <div class="row mt-1">
           <div class="col-3" style="min-width: 15rem;">
@@ -67,9 +90,6 @@
 
           
     <div class="container overflow-auto">
-      <!-- Search -->
-
-    
     <!-- Table -->
     <div class="overflow-y" id="table-container">
       <table class="table table-dark table-fixed table-striped table-hover border text-center">
@@ -91,7 +111,7 @@
           </tr>
           </thead>
           <tbody>
-            <?php $i = 1; ?>
+            <?php $i = $first_data+1; ?>
             <?php while($row = mysqli_fetch_array($jadwal)) :?>
             <tr>
               <td><?= $i++ ?></td>
@@ -119,7 +139,7 @@
                 ;
               ?>
               <?php if(isset($_SESSION["login"])): ?>
-              <td><a href="delete_jadwal.php?id=<?= $row[0] ?>" class="text-danger">Delete</a> | <a href="edit.php?<?= $urlQuery ?>" class="text-info">Edit</a></td>
+              <td><a href="function/delete_jadwal.php?id=<?= $row[0] ?>" class="text-danger">Delete</a> | <a href="edit.php?<?= $urlQuery ?>" class="text-info">Edit</a></td>
               <?php endif ?>
             </tr>
             <?php endwhile ?>
@@ -127,7 +147,19 @@
         </table>
       </div>
     </div>
-
+    <div class="container">
+      <nav aria-label="Page navigationx">
+        <ul class="pagination">
+          <li class="page-item">
+            <a class="page-link <?= $current_page-1 < 1 ? "disabled" : "" ?>" href="index.php?halaman=<?= $current_page-1 ?>">Previous</a>
+          </li>
+          <?php for($i = 1; $i <= $total_page; $i++) : ?>
+            <li class="page-item"><a class="page-link <?= $current_page == $i ? "active" : "" ?>" href="index.php?halaman=<?= $i ?>"><?= $i ?></a></li>
+            <?php endfor ?>
+          <li class="page-item <?= $current_page+1 > $total_page ? "disabled" : "" ?>"><a class="page-link" href="index.php?halaman=<?= $current_page+1 ?>">Next</a></li>
+        </ul>
+      </nav>
+    </div>
   </main> 
   
   <!-- Modal -->
@@ -139,7 +171,7 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <form method="POST" action="add_jadwal.php">
+          <form method="POST" action="function/add_jadwal.php">
             
             <div class="mb-3">
               <label for="hari" class="form-label">Hari</label>
@@ -154,9 +186,9 @@
 
             <label for="kelas" class="form-label">Waktu</label>
             <div class="input-group mb-3">
-              <input type="text" class="form-control" placeholder="00.00" name="waktu_mulai" id="waktu_mulai">
+              <input type="time" class="form-control" placeholder="00.00" name="waktu_mulai" id="waktu_mulai">
               <span class="input-group-text">-</span>
-              <input type="text" class="form-control" placeholder="00.00" name="waktu_selesai" id="waktu_selesai">
+              <input type="time" class="form-control" placeholder="00.00" name="waktu_selesai" id="waktu_selesai">
             </div>
 
             <label for="kelas" class="form-label">Kelas</label>

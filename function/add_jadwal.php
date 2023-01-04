@@ -1,9 +1,9 @@
 <?php
   session_start();
-  require "config/connection.php";
+  require "../config/connection.php";
   $hari = $_POST["hari"];
-  $waktu_mulai = $_POST["waktu_mulai"];
-  $waktu_selesai = $_POST["waktu_selesai"];
+  $waktu_mulai = str_replace(":",".",$_POST["waktu_mulai"]);
+  $waktu_selesai = str_replace(":",".",$_POST["waktu_selesai"]);
   $kelas = $_POST["kelas_prodi"] . "-" . $_POST["kelas"];
   $matkul = $_POST["matkul"];
   $dosen = $_POST["dosen"];
@@ -27,5 +27,5 @@
 
   mysqli_query($conn, $query);  
 
-  header("Location: index.php");
+  header("Location: ../index.php");
   exit;

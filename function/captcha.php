@@ -10,7 +10,7 @@
   $grey = imagecolorallocate($gbr, 128, 128, 128);
   $black = imagecolorallocate($gbr, 0, 0, 0);
 
-  $font = "source/monaco.ttf";
+  $font = "../source/monaco.ttf";
 
   for($i = 0; $i <= 5; $i++){
     $nomor= random_int(0,9);

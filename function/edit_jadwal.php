@@ -1,6 +1,6 @@
 <?php
-  session_start();
-  require "config/connection.php";
+session_start();
+  require "../config/connection.php";
   $id = $_POST["id"];
   $hari = $_POST["hari"];
   $waktu_mulai = $_POST["waktu_mulai"];
@@ -28,5 +28,5 @@
 
   mysqli_query($conn, $query);  
 
-  header("Location: index.php");
+  header("Location: ../index.php");
   exit;
