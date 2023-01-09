@@ -4,7 +4,7 @@
   $hari = $_POST["hari"];
   $waktu_mulai = str_replace(":",".",$_POST["waktu_mulai"]);
   $waktu_selesai = str_replace(":",".",$_POST["waktu_selesai"]);
-  $kelas = $_POST["kelas_prodi"] . "-" . $_POST["kelas"];
+  $kelas = $_POST["kelas_prodi"] . " - " . $_POST["kelas"];
   $matkul = $_POST["matkul"];
   $dosen = $_POST["dosen"];
   $ruang = $_POST["ruang"];
@@ -25,7 +25,9 @@
               '$semester'
             )";
 
-  mysqli_query($conn, $query);  
+  mysqli_query($conn, $query);
+
+ $_SESSION["alert"] = "Jadwal berhasil ditambahkan!";
 
   header("Location: ../index.php");
   exit;

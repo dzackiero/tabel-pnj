@@ -39,36 +39,70 @@
       <?php endif ?>
     </div>
   </nav>
+
+  <!-- Toast -->
+  <?php if(isset($_SESSION["alert"])): ?>
+    <div class="alert alert-primary alert-dismissible fade show" role="alert" 
+    style="
+    position: absolute;
+    top:6rem;
+    right:1rem;
+    "
+    >
+      <?= $_SESSION["alert"] ?>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    <?php unset($_SESSION["alert"]) ?>
+  <?php endif ?>
   
   <main class="p-5 d-flex flex-column gap-3">
     <!-- Title -->
     <div class="container w-50">
+
+      <!-- Tambah Dosen -->
       <h1 class="text-center pb-3">Tambah Dosen</h1>
       <form method="POST" action="function/add_dosen.php">
         <div class="mb-3">
           <label for="nama_dosen" class="form-label">Nama Dosen</label>
-          <input type="text" class="form-control" placeholder="Nama Dosen" name="nama_dosen" id="nama_dosen">
+          <input type="text" class="form-control" placeholder="Nama Dosen" name="nama_dosen" id="nama_dosen" required>
         </div>
         <div class="mb-3">
           <label for="nip" class="form-label">NIP</label>
-          <input type="text" class="form-control" placeholder="NIP" name="nip" id="nip">
+          <input type="text" class="form-control" placeholder="NIP" name="nip" id="nip" required>
         </div>
         <div class="mb-3">
           <button type="submit" class="btn btn-primary">Tambah Dosen</button>
         </div>
       </form>
+
+      <!-- Tambah Mata Kuliah -->
       <h1 class="text-center pb-3">Tambah Mata Kuliah</h1>
       <form method="POST" action="function/add_mata_kuliah.php">
         <div class="mb-3">
           <label for="nama_dosen" class="form-label">Mata Kuliah</label>
-          <input type="text" class="form-control" placeholder="Mata Kuliah" name="mata_kuliah" id="mata_kuliah">
+          <input type="text" class="form-control" placeholder="Mata Kuliah" name="mata_kuliah" id="mata_kuliah" required>
         </div>
         <div class="mb-3">
           <label for="nip" class="form-label">Kode</label>
-          <input type="text" class="form-control" placeholder="Kode" name="kode" id="kode">
+          <input type="text" class="form-control" placeholder="Kode" name="kode" id="kode" required>
         </div>
         <div class="mb-3">
-          <button type="submit" class="btn btn-primary">Tamba Mata Kuliahh</button>
+          <button type="submit" class="btn btn-primary">Tamba Mata Kuliah</button>
+        </div>
+      </form>
+
+      <h1 class="text-center pb-3">Tambah User</h1>
+      <form method="POST" action="function/add_user.php">
+        <div class="mb-3">
+          <label for="username" class="form-label">username</label>
+          <input type="text" class="form-control" placeholder="username" name="username" id="username" required>
+        </div>
+        <div class="mb-3">
+          <label for="password" class="form-label">Password</label>
+          <input type="password" class="form-control" name="password" id="password" placeholder="Password" required>
+        </div>
+        <div class="mb-3">
+          <button type="submit" class="btn btn-primary">Tambah User</button>
         </div>
       </form>
     </div>

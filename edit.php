@@ -23,7 +23,7 @@
     $hari = $_GET["hari"];
     $waktu_mulai = $_GET["waktu_mulai"];
     $waktu_selesai = $_GET["waktu_selesai"];
-    $kelasArr = explode("-",$_GET["kelas"]);
+    $kelasArr = explode(" - ",$_GET["kelas"]);
     
     $kelas_prodi = $kelasArr[0];
     $kelas = $kelasArr[1];

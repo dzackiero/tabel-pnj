@@ -27,6 +27,6 @@ session_start();
           ;
 
   mysqli_query($conn, $query);  
-
+ 
   header("Location: ../index.php");
   exit;

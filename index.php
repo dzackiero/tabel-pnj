@@ -24,6 +24,7 @@
     //Search and sort
     $keyword = isset($_GET["keyword"]) ? $_GET["keyword"] : "";  
     $sort = isset($_GET["sort"]) ? $_GET["sort"] : "";
+    $sortBy = isset($_GET["sortby"]) ? $_GET["sortby"] : "asc";
 
     $query = "SELECT JA.id, hari, waktu_mulai, waktu_selesai, kelas, ruang, jumlah_jam, tahun_ajaran, semester, mata_kuliah, nama FROM JADWAL AS JA JOIN MATA_KULIAH AS MK ON MK.ID = JA.MATA_KULIAH_ID JOIN DOSEN AS DS ON DS.ID = JA.DOSEN_ID";
     
@@ -41,6 +42,7 @@
 
     $jadwal = mysqli_query($conn, $query);
     if(mysqli_num_rows($jadwal) <= 0){
+      $keyword = "";
       $query = "SELECT JA.id, hari, waktu_mulai, waktu_selesai, kelas, ruang, jumlah_jam, tahun_ajaran, semester, mata_kuliah, nama FROM JADWAL AS JA JOIN MATA_KULIAH AS MK ON MK.ID = JA.MATA_KULIAH_ID JOIN DOSEN AS DS ON DS.ID = JA.DOSEN_ID";
     };
 
@@ -49,14 +51,14 @@
       if($sort == "hari"){
         $query .= " ORDER BY field(hari, 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu')";
       } else {
-        $query .= " ORDER BY $sort";
+        $query .= " ORDER BY $sort $sortBy";
       }
     }
 
     $jadwal = mysqli_query($conn, $query);
 
     //Paginasi
-    $per_page = 20;
+    $per_page = 15;
     $data_count = mysqli_num_rows($jadwal);
     $total_page = ceil($data_count / $per_page);
     $current_page = isset($_GET["halaman"]) ? $_GET["halaman"] : 1;
@@ -70,7 +72,7 @@
   <!-- Navigation bar -->
   <nav class="navbar bg-dark navbar-dark">
     <div class="container-fluid px-4 py-1">
-      <a class="navbar-brand inline" href="#">
+      <a class="navbar-brand inline" href="index.php">
         <h2>Politeknik Negeri Jakarta</h2>
       </a>
       <?php if(!isset($_SESSION["login"])): ?>
@@ -88,31 +90,53 @@
       <?php endif ?>
     </div>
   </nav>
-  
+
+  <!-- Toast -->
+  <?php if(isset($_SESSION["alert"])): ?>
+    <div class="alert alert-primary alert-dismissible fade show" role="alert" 
+    style="
+    position: absolute;
+    top:6rem;
+    right:1rem;
+    "
+    >
+      <?= $_SESSION["alert"] ?>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+  <?php unset($_SESSION["alert"]) ?>
+  <?php endif ?>
+
   <main class="p-5 d-flex flex-column gap-3">
     <!-- Title -->
+    <div class="d-flex justify-content-center">
+      <img src="https://file.maukuliah.id/img/logo/Poltek-Negeri-Jakarta.png" alt="" width="250">
+    </div>
     <h1 class="text-center pb-3">Tabel Jadwal Siswa</h1>
 
     <!-- Excel -->
     <?php if(isset($_SESSION["login"])) : ?>
-    <div class="container d-flex justify-content-center">
-      <form action="function/upload_file.php" method="POST" enctype="multipart/form-data">
-        <div class="mb-3">
-          <label for="excel" class="form-label">Excel</label>
-          <input type="file" class="form-control" accept=".xls,.xlsx" id="excel" name="excel" style="width: min-content;">
-        </div>
-        <button type="submit" class="btn btn-primary">Upload Excel</button>
-      </form>
-    </div>
+      <div class="container d-flex justify-content-center">
+        <form action="function/upload_file.php" method="POST" enctype="multipart/form-data">
+          <div class="mb-3">
+            <label for="excel" class="form-label">Excel</label>
+            <input type="file" class="form-control" accept=".xls,.xlsx" id="excel" name="excel" style="width: min-content;" required>
+          </div>
+          <button type="submit" class="btn btn-primary">Upload Excel</button>
+        </form>
+      </div>
     <?php endif ?>
     
     <!-- Search And Add -->
     <div class="container">
       <div class="row mt-1">
+        
+        <!-- Search -->
         <div class="col-4" style="min-width: 15rem;">
           <form method="GET">
           <input type="text" class="form-control" name="keyword" id="search" placeholder="Pencarian" autocomplete="off" value="<?= $keyword ?>">
         </div>
+
+        <!-- Sort Option -->
         <div class="col">
           <select class="form-select" id="sort-select" name="sort">
             <option value="id" <?= $sort == "id" ? "selected" : "" ?>>Nomor</option>
@@ -125,11 +149,22 @@
             <option value="semester" <?= $sort == "semester" ? "selected" : "" ?>>Semester</option>
           </select>
         </div>
+        <!-- Ascending/Decending -->
+        <div class="col">
+          <select class="form-select" id="sortby" name="sortby">
+            <option value="asc" <?= $sortBy == "asc" ? "selected" : "" ?>>Ascending</option>
+            <option value="desc" <?= $sortBy == "desc" ? "selected" : "" ?>>Descending</option>
+          </select>
+        </div>
+        
+        <!-- Search And Clear Button -->
         <div class="col d-flex align-items-center flex">
           <button type="submit" class="btn btn-primary" style="margin-right: 0.5rem;">Cari</button>
           <a class="btn btn-primary" href="index.php">Clear</a>
           </form>
         </div>
+
+        <!-- Add Jadwal -->
         <div class="col d-flex align-items-center justify-content-end">
           <?php if(isset($_SESSION["login"])): ?>
           <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#tambahModal">
@@ -137,30 +172,30 @@
           </button>
           <?php endif ?>
         </div>
+        
       </div>
     </div>
 
-          
     <div class="container overflow-auto">
-    <!-- Table -->
-    <div class="overflow-y" id="table-container">
-      <table class="table table-dark table-fixed table-striped table-hover border text-center">
-        <thead>
-          <tr class="text-nowrap">
-            <th scope="col">No</th>
-            <th scope="col">Hari</th>
-            <th scope="col">Slot Waktu</th>
-            <th scope="col">Kelas</th>
-            <th scope="col">Mata Kuliah</th>
-            <th scope="col">Dosen</th>
-            <th scope="col">Ruang</th>
-            <th scope="col">Jumlah Jam</th>
-            <th scope="col">Tahun Ajaran</th>
-            <th scope="col">Semester</th>
-            <?php if(isset($_SESSION["login"])): ?>
-              <th scope="col">Aksi</th>
-            <?php endif ?>
-          </tr>
+      <!-- Table -->
+      <div class="overflow-y" id="table-container">
+        <table class="table table-dark table-fixed table-striped table-hover border text-center">
+          <thead>
+              <tr class="text-nowrap">
+                <th scope="col">No</th>
+                <th scope="col">Hari</th>
+                <th scope="col">Slot Waktu</th>
+                <th scope="col">Kelas</th>
+                <th scope="col">Mata Kuliah</th>
+                <th scope="col">Dosen</th>
+                <th scope="col">Ruang</th>
+                <th scope="col">Jumlah Jam</th>
+                <th scope="col">Tahun Ajaran</th>
+                <th scope="col">Semester</th>
+                <?php if(isset($_SESSION["login"])): ?>
+                  <th scope="col">Aksi</th>
+                <?php endif ?>
+              </tr>
           </thead>
           <tbody>
             <?php $i = $first_data+1; ?>
@@ -199,16 +234,131 @@
         </table>
       </div>
     </div>
+
+    <!-- Pagination -->
     <div class="container">
       <nav aria-label="Page navigation">
         <ul class="pagination">
+          <!-- Previous -->
           <li class="page-item">
-            <a class="page-link <?= $current_page-1 < 1 ? "disabled" : "" ?>" href="index.php?halaman=<?= $current_page-1 ?><?= $keyword != "" ? "&keyword=$keyword" : "" ?><?= $sort != "" ? "&sort=$sort" : "" ?>">Previous</a>
+            <a class="page-link <?= $current_page-1 < 1 ? "disabled" : "" ?>"
+            href="index.php?halaman=<?= $current_page-1 ?><?= $keyword != "" ? "&keyword=$keyword" : "" ?><?= $sort != "" ? "&sort=$sort" : "" ?>&<?= $sortBy != "" ? "&sortby=$sortBy" : "" ?>">
+              Previous
+            </a>
           </li>
-          <?php for($i = 1; $i <= $total_page; $i++) : ?>
-            <li class="page-item"><a class="page-link <?= $current_page == $i ? "active" : "" ?>" href="index.php?halaman=<?= $i ?><?= $keyword != "" ? "&keyword=$keyword" : "" ?><?= $sort != "" ? "&sort=$sort" : "" ?>"><?= $i ?></a></li>
+
+          <!-- If Less Than 6-->
+          <?php if($total_page <= 5) :?>
+            <?php for($i = 1; $i <= $total_page; $i++) : ?>
+              <li class="page-item">
+                <a class="page-link <?= $current_page == $i ? "active" : "" ?>"
+                href="index.php?halaman=<?= $i ?><?= $keyword != "" ? "&keyword=$keyword" : "" ?><?= $sort != "" ? "&sort=$sort" : "" ?>&<?= $sortBy != "" ? "&sortby=$sortBy" : "" ?>">
+                  <?= $i ?>
+                </a>
+              </li>
             <?php endfor ?>
-          <li class="page-item <?= $current_page+1 > $total_page ? "disabled" : "" ?>"><a class="page-link" href="index.php?halaman=<?= $current_page+1 ?><?= $keyword != "" ? "&keyword=$keyword" : "" ?><?= $sort != "" ? "&sort=$sort" : "" ?>">Next</a></li>
+          <?php endif ?>
+
+          <?php if($total_page > 5) : ?>
+
+            <!-- Current Page First 3 Item -->
+            <?php if($current_page <= 3): ?>
+              <?php for($i = 1; $i <= 4; $i++) : ?>
+              <li class="page-item">
+                <a class="page-link <?= $current_page == $i ? "active" : "" ?>"
+                href="index.php?halaman=<?= $i ?><?= $keyword != "" ? "&keyword=$keyword" : "" ?><?= $sort != "" ? "&sort=$sort" : "" ?>&<?= $sortBy != "" ? "&sortby=$sortBy" : "" ?>">
+                  <?= $i ?>
+                </a>
+              </li>
+              <?php endfor ?>
+              <li class="page-item">
+                <a class="page-link"
+                href="index.php?halaman=<?= 5 ?><?= $keyword != "" ? "&keyword=$keyword" : "" ?><?= $sort != "" ? "&sort=$sort" : "" ?>&<?= $sortBy != "" ? "&sortby=$sortBy" : "" ?>">
+                  <?= "..." ?>
+                </a>
+              </li>
+              <li class="page-item">
+                <a class="page-link <?= $current_page == $total_page ? "active" : "" ?>"
+                href="index.php?halaman=<?= $total_page ?><?= $keyword != "" ? "&keyword=$keyword" : "" ?><?= $sort != "" ? "&sort=$sort" : "" ?>&<?= $sortBy != "" ? "&sortby=$sortBy" : "" ?>">
+                  <?= $total_page ?>
+                </a>
+              </li>
+            <?php endif ?>
+              
+            <!-- Current Page In Between First 3 Item and Last 3 item -->
+            <?php if($current_page > 3 && $current_page < $total_page - 2): ?>
+              <li class="page-item">
+                <a class="page-link"
+                href="index.php?halaman=<?= 1 ?><?= $keyword != "" ? "&keyword=$keyword" : "" ?><?= $sort != "" ? "&sort=$sort" : "" ?>&<?= $sortBy != "" ? "&sortby=$sortBy" : "" ?>">
+                  <?= 1 ?>
+                </a>
+              </li>
+              <li class="page-item">
+                <a class="page-link"
+                href="index.php?halaman=<?= $current_page - 2 ?><?= $keyword != "" ? "&keyword=$keyword" : "" ?><?= $sort != "" ? "&sort=$sort" : "" ?>&<?= $sortBy != "" ? "&sortby=$sortBy" : "" ?>">
+                  <?= "..." ?>
+                </a>
+              </li>
+              <?php for($i = $current_page-1; $i <= $current_page+1; $i++) : ?>
+              <li class="page-item">
+                <a class="page-link <?= $current_page == $i ? "active" : "" ?>"
+                href="index.php?halaman=<?= $i ?><?= $keyword != "" ? "&keyword=$keyword" : "" ?><?= $sort != "" ? "&sort=$sort" : "" ?>&<?= $sortBy != "" ? "&sortby=$sortBy" : "" ?>">
+                  <?= $i ?>
+                </a>
+              </li>
+              <?php endfor ?>
+              <li class="page-item">
+                <a class="page-link"
+                href="index.php?halaman=<?= $current_page + 2 ?><?= $keyword != "" ? "&keyword=$keyword" : "" ?><?= $sort != "" ? "&sort=$sort" : "" ?>&<?= $sortBy != "" ? "&sortby=$sortBy" : "" ?>">
+                  <?= "..." ?>
+                </a>
+              </li>
+              <li class="page-item">
+                <a class="page-link <?= $current_page == $total_page ? "active" : "" ?>"
+                href="index.php?halaman=<?= $total_page ?><?= $keyword != "" ? "&keyword=$keyword" : "" ?><?= $sort != "" ? "&sort=$sort" : "" ?>&<?= $sortBy != "" ? "&sortby=$sortBy" : "" ?>">
+                  <?= $total_page ?>
+                </a>
+              </li>
+            <?php endif ?>
+
+            <!-- Current Page In Last 3 Item -->
+            <?php if($current_page >= $total_page - 2): ?>
+              <li class="page-item">
+                <a class="page-link"
+                href="index.php?halaman=<?= 1 ?><?= $keyword != "" ? "&keyword=$keyword" : "" ?><?= $sort != "" ? "&sort=$sort" : "" ?>&<?= $sortBy != "" ? "&sortby=$sortBy" : "" ?>">
+                  <?= 1 ?>
+                </a>
+              </li>
+              <li class="page-item">
+                <a class="page-link"
+                href="index.php?halaman=<?= $total_page-4 ?><?= $keyword != "" ? "&keyword=$keyword" : "" ?><?= $sort != "" ? "&sort=$sort" : "" ?>&<?= $sortBy != "" ? "&sortby=$sortBy" : "" ?>">
+                  <?= "..." ?>
+                </a>
+              </li>
+              <?php for($i = $total_page-3; $i <= $total_page-1; $i++) : ?>
+              <li class="page-item">
+                <a class="page-link <?= $current_page == $i ? "active" : "" ?>"
+                href="index.php?halaman=<?= $i ?><?= $keyword != "" ? "&keyword=$keyword" : "" ?><?= $sort != "" ? "&sort=$sort" : "" ?>&<?= $sortBy != "" ? "&sortby=$sortBy" : "" ?>">
+                  <?= $i ?>
+                </a>
+              </li>
+              <?php endfor ?>
+              <li class="page-item">
+                <a class="page-link <?= $current_page == $total_page ? "active" : "" ?>"
+                href="index.php?halaman=<?= $total_page ?><?= $keyword != "" ? "&keyword=$keyword" : "" ?><?= $sort != "" ? "&sort=$sort" : "" ?>&<?= $sortBy != "" ? "&sortby=$sortBy" : "" ?>">
+                  <?= $total_page ?>
+                </a>
+              </li>
+            <?php endif ?>
+
+          <?php endif ?>
+          <!-- Next -->
+          <li class="page-item <?= $current_page+1 > $total_page ? "disabled" : "" ?>">
+            <a class="page-link" href="index.php?halaman=<?= $current_page+1 ?><?= $keyword != "" ? "&keyword=$keyword" : "" ?><?= $sort != "" ? "&sort=$sort" : "" ?>&<?= $sortBy != "" ? "&sortby=$sortBy" : "" ?>">
+              Next
+            </a>
+          </li>
+
         </ul>
       </nav>
     </div>

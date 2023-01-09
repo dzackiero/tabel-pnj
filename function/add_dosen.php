@@ -9,7 +9,10 @@
               '$nip'
             )";
 
-  mysqli_query($conn, $query);  
+  mysqli_query($conn, $query);
+
+ $_SESSION["alert"] = " Dosen berhasil ditambahkan!";
+
 
   header("Location: ../manage.php");
   exit;

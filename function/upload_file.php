@@ -1,5 +1,7 @@
 <?php
-  move_uploaded_file($_FILES["excel"]["tmp_name"], "../public/temp_excel.xlsx");
+  session_start();
+  $ext = pathinfo($_FILES["excel"]["name"],PATHINFO_EXTENSION);
+  move_uploaded_file($_FILES["excel"]["tmp_name"], "../source/temp_excel.$ext");
 
   require "../config/connection.php";
   // include the autoloader, so we can use PhpSpreadsheet
@@ -13,10 +15,12 @@
   $reader->setReadDataOnly(true);
 
   // Read the spreadsheet file.
-  $spreadsheet = $reader->load(__DIR__ . '/../public/temp_excel.xlsx');
+  $spreadsheet = $reader->load(__DIR__ . '/../source/temp_excel.xlsx');
 
   $sheet = $spreadsheet->getSheet($spreadsheet->getFirstSheetIndex());
   $data = $sheet->toArray();
+
+  unlink("../source/temp_excel.xlsx");
 
   $header = true;
   // output the data to the console, so you can see what there is.
@@ -72,8 +76,7 @@
       $waktu_selesai = $waktu[1];
 
       $kelas = explode(" ", $col[3], 2);
-      $kelas_prodi = $kelas[0];
-      $kelas = $kelas[1];
+      $kelas = $kelas[0] . " - " . $kelas[1];
 
       $matkul = $id_mata_kuliah;
       $dosen = $id_dosen;
@@ -98,3 +101,7 @@
 
       mysqli_query($conn, $query);
     }
+
+  $_SESSION["alert"] = "Data dari Excel berhasil ditambahkan!";
+
+  header("Location: ../index.php");

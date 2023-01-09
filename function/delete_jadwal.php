@@ -7,5 +7,7 @@
 
   mysqli_query($conn, $query);  
 
+ $_SESSION["alert"] = "Jadwal berhasil dihapus!";
+
   header("Location: ../index.php");
   exit;

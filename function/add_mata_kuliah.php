@@ -9,7 +9,9 @@
               '$kode'
             )";
 
-  mysqli_query($conn, $query);  
+  mysqli_query($conn, $query);
+
+ $_SESSION["alert"] = "Mata kuliah berhasil ditambahkan!";
 
   header("Location: ../manage.php");
   exit;
