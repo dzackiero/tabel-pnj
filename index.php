@@ -7,11 +7,12 @@
   <title>Home | Jadwal PNJ</title>
   <link rel="shortcut icon" href="https://www.pnj.ac.id/asset/images/logo@2x.png">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
-  <script src="source/search.js" defer></script>
+  <!-- <script src="source/search.js" defer></script> -->
 </head>
 <body style="background-color: #f8f8f8; min-height: 100vh">
   <?php
     session_start();
+
     require "config/connection.php";
     
     $query = "SELECT * FROM dosen";
@@ -20,63 +21,114 @@
     $query = "SELECT * FROM mata_kuliah";
     $matkul = mysqli_query($conn, $query);
 
-    $query = "SELECT id FROM jadwal";
+    //Search and sort
+    $keyword = isset($_GET["keyword"]) ? $_GET["keyword"] : "";  
+    $sort = isset($_GET["sort"]) ? $_GET["sort"] : "";
+
+    $query = "SELECT JA.id, hari, waktu_mulai, waktu_selesai, kelas, ruang, jumlah_jam, tahun_ajaran, semester, mata_kuliah, nama FROM JADWAL AS JA JOIN MATA_KULIAH AS MK ON MK.ID = JA.MATA_KULIAH_ID JOIN DOSEN AS DS ON DS.ID = JA.DOSEN_ID";
+    
+    if($keyword != ""){
+      $query .= " WHERE
+      hari LIKE '%$keyword%' OR
+      kelas LIKE '%$keyword%' OR
+      ruang LIKE '%$keyword%' OR
+      jumlah_jam LIKE '%$keyword%' OR
+      tahun_ajaran LIKE '%$keyword%' OR
+      semester LIKE '%$keyword%' OR
+      mata_kuliah LIKE '%$keyword%' OR
+      nama LIKE '%$keyword%'";
+    }
+
+    $jadwal = mysqli_query($conn, $query);
+    if(mysqli_num_rows($jadwal) <= 0){
+      $query = "SELECT JA.id, hari, waktu_mulai, waktu_selesai, kelas, ruang, jumlah_jam, tahun_ajaran, semester, mata_kuliah, nama FROM JADWAL AS JA JOIN MATA_KULIAH AS MK ON MK.ID = JA.MATA_KULIAH_ID JOIN DOSEN AS DS ON DS.ID = JA.DOSEN_ID";
+    };
+
+
+    if($sort != ""){
+      if($sort == "hari"){
+        $query .= " ORDER BY field(hari, 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu')";
+      } else {
+        $query .= " ORDER BY $sort";
+      }
+    }
 
     $jadwal = mysqli_query($conn, $query);
 
-
     //Paginasi
-    $per_page = 5;
+    $per_page = 20;
     $data_count = mysqli_num_rows($jadwal);
     $total_page = ceil($data_count / $per_page);
     $current_page = isset($_GET["halaman"]) ? $_GET["halaman"] : 1;
     $first_data = ($per_page * $current_page) - $per_page;
 
-    $query = "SELECT JA.id, hari, waktu_mulai, waktu_selesai, kelas, ruang, jumlah_jam, tahun_ajaran, semester, mata_kuliah, nama FROM JADWAL AS JA JOIN MATA_KULIAH AS MK ON MK.ID = JA.MATA_KULIAH_ID JOIN DOSEN AS DS ON DS.ID = JA.DOSEN_ID LIMIT $first_data, $per_page";
+    $query .= " LIMIT $first_data, $per_page";
 
     $jadwal = mysqli_query($conn, $query);
 ?>
 
   <!-- Navigation bar -->
-
   <nav class="navbar bg-dark navbar-dark">
-  <div class="container-fluid px-4 py-1">
-    <a class="navbar-brand" href="#"><h2>Politeknik Negeri Jakarta</h2></a>
-    <?php if(!isset($_SESSION["login"])): ?>
-      <a class="btn btn-primary px-4" href="login.php" role="button">Login</a>
-    <?php else: ?>
-      <div class="btn-group">
-        <button type="button" class="btn btn-outline-secondary text-light border-dark dropdown-toggle fw-semibold" data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false">
-          Hi, <?= ucfirst($_SESSION["username"]) ?>
-        </button>
-        <ul class="dropdown-menu dropdown-menu-end">
-          <li><a class="dropdown-item" href="manage.php" role="button">Manajemen Data</a></li>
-          <li><a class="dropdown-item" href="function/logout.php" role="button">Logout</a></li>
-        </ul>
-      </div>
-    <?php endif ?>
-  </div>
-</nav>
+    <div class="container-fluid px-4 py-1">
+      <a class="navbar-brand inline" href="#">
+        <h2>Politeknik Negeri Jakarta</h2>
+      </a>
+      <?php if(!isset($_SESSION["login"])): ?>
+        <a class="btn btn-primary px-4" href="login.php" role="button">Login</a>
+      <?php else: ?>
+        <div class="btn-group">
+          <button type="button" class="btn btn-outline-secondary text-light border-dark dropdown-toggle fw-semibold" data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false">
+            Hi, <?= ucfirst($_SESSION["username"]) ?>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item" href="manage.php" role="button">Manajemen Data</a></li>
+            <li><a class="dropdown-item" href="function/logout.php" role="button">Logout</a></li>
+          </ul>
+        </div>
+      <?php endif ?>
+    </div>
+  </nav>
   
   <main class="p-5 d-flex flex-column gap-3">
     <!-- Title -->
     <h1 class="text-center pb-3">Tabel Jadwal Siswa</h1>
 
-
     <!-- Excel -->
+    <?php if(isset($_SESSION["login"])) : ?>
     <div class="container d-flex justify-content-center">
       <form action="function/upload_file.php" method="POST" enctype="multipart/form-data">
-        <label for="excel" class="form-label">Excel</label>
-        <input type="file" class="form-control" id="excel" name="excel" style="width: min-content;">
-        <button type="submit" name="excel">Excel</button>
+        <div class="mb-3">
+          <label for="excel" class="form-label">Excel</label>
+          <input type="file" class="form-control" accept=".xls,.xlsx" id="excel" name="excel" style="width: min-content;">
+        </div>
+        <button type="submit" class="btn btn-primary">Upload Excel</button>
       </form>
     </div>
+    <?php endif ?>
     
-    <!-- Searchh And Add -->
+    <!-- Search And Add -->
     <div class="container">
       <div class="row mt-1">
-          <div class="col-3" style="min-width: 15rem;">
-            <input type="text" class="form-control" name="search" id="search" placeholder="Pencarian">
+        <div class="col-4" style="min-width: 15rem;">
+          <form method="GET">
+          <input type="text" class="form-control" name="keyword" id="search" placeholder="Pencarian" autocomplete="off" value="<?= $keyword ?>">
+        </div>
+        <div class="col">
+          <select class="form-select" id="sort-select" name="sort">
+            <option value="id" <?= $sort == "id" ? "selected" : "" ?>>Nomor</option>
+            <option value="hari" <?= $sort == "hari" ? "selected" : "" ?>>Hari</option>
+            <option value="mata_kuliah" <?= $sort == "mata_kuliah" ? "selected" : "" ?>>Mata Kuliah</option>
+            <option value="nama" <?= $sort == "nama" ? "selected" : "" ?>>Dosen</option>
+            <option value="ruang" <?= $sort == "ruang" ? "selected" : "" ?>>Ruang</option>
+            <option value="jumlah_jam" <?= $sort == "jumlah_jam" ? "selected" : "" ?>>Jumlah Jam</option>
+            <option value="tahun_ajaran" <?= $sort == "tahun_ajaran" ? "selected" : "" ?>>Tahun Ajaran</option>
+            <option value="semester" <?= $sort == "semester" ? "selected" : "" ?>>Semester</option>
+          </select>
+        </div>
+        <div class="col d-flex align-items-center flex">
+          <button type="submit" class="btn btn-primary" style="margin-right: 0.5rem;">Cari</button>
+          <a class="btn btn-primary" href="index.php">Clear</a>
+          </form>
         </div>
         <div class="col d-flex align-items-center justify-content-end">
           <?php if(isset($_SESSION["login"])): ?>
@@ -148,15 +200,15 @@
       </div>
     </div>
     <div class="container">
-      <nav aria-label="Page navigationx">
+      <nav aria-label="Page navigation">
         <ul class="pagination">
           <li class="page-item">
-            <a class="page-link <?= $current_page-1 < 1 ? "disabled" : "" ?>" href="index.php?halaman=<?= $current_page-1 ?>">Previous</a>
+            <a class="page-link <?= $current_page-1 < 1 ? "disabled" : "" ?>" href="index.php?halaman=<?= $current_page-1 ?><?= $keyword != "" ? "&keyword=$keyword" : "" ?><?= $sort != "" ? "&sort=$sort" : "" ?>">Previous</a>
           </li>
           <?php for($i = 1; $i <= $total_page; $i++) : ?>
-            <li class="page-item"><a class="page-link <?= $current_page == $i ? "active" : "" ?>" href="index.php?halaman=<?= $i ?>"><?= $i ?></a></li>
+            <li class="page-item"><a class="page-link <?= $current_page == $i ? "active" : "" ?>" href="index.php?halaman=<?= $i ?><?= $keyword != "" ? "&keyword=$keyword" : "" ?><?= $sort != "" ? "&sort=$sort" : "" ?>"><?= $i ?></a></li>
             <?php endfor ?>
-          <li class="page-item <?= $current_page+1 > $total_page ? "disabled" : "" ?>"><a class="page-link" href="index.php?halaman=<?= $current_page+1 ?>">Next</a></li>
+          <li class="page-item <?= $current_page+1 > $total_page ? "disabled" : "" ?>"><a class="page-link" href="index.php?halaman=<?= $current_page+1 ?><?= $keyword != "" ? "&keyword=$keyword" : "" ?><?= $sort != "" ? "&sort=$sort" : "" ?>">Next</a></li>
         </ul>
       </nav>
     </div>
@@ -175,7 +227,7 @@
             
             <div class="mb-3">
               <label for="hari" class="form-label">Hari</label>
-              <select name="hari" id="hari" class="form-select">
+              <select name="hari" id="hari" class="form-select" >
                 <option value="Senin">Senin</option>
                 <option value="Selasa">Selasa</option>
                 <option value="Rabu">Rabu</option>
@@ -186,16 +238,16 @@
 
             <label for="kelas" class="form-label">Waktu</label>
             <div class="input-group mb-3">
-              <input type="time" class="form-control" placeholder="00.00" name="waktu_mulai" id="waktu_mulai">
+              <input type="time" class="form-control" placeholder="00.00" name="waktu_mulai" id="waktu_mulai" required>
               <span class="input-group-text">-</span>
-              <input type="time" class="form-control" placeholder="00.00" name="waktu_selesai" id="waktu_selesai">
+              <input type="time" class="form-control" placeholder="00.00" name="waktu_selesai" id="waktu_selesai" required>
             </div>
 
             <label for="kelas" class="form-label">Kelas</label>
             <div class="input-group mb-3">
-              <input type="text" class="form-control" placeholder="TI" name="kelas_prodi" id="kelas_prodi">
+              <input type="text" class="form-control" placeholder="TI" name="kelas_prodi" id="kelas_prodi" required>
               <span class="input-group-text">-</span>
-              <input type="text" class="form-control" placeholder="3B" name="kelas" id="kelas">
+              <input type="text" class="form-control" placeholder="3B" name="kelas" id="kelas" required>
             </div>
 
             <div class="mb-3">
@@ -218,12 +270,12 @@
 
             <div class="mb-3">
               <label for="ruang" class="form-label">Ruang</label>
-              <input type="text" class="form-control" name="ruang" id="ruang" placeholder="Ruang">
+              <input type="text" class="form-control" name="ruang" id="ruang" placeholder="Ruang" required>
             </div>
             
             <div class="mb-3">
               <label for="jam" class="form-label">Jumlah Jam</label>
-              <input type="number" class="form-control" name="jam" id="jam" placeholder="Jumlah Jam">
+              <input type="number" class="form-control" min="1" name="jam" id="jam" placeholder="Jumlah Jam" required>
             </div>
 
             <div class="mb-3">

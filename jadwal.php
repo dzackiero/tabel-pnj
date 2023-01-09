@@ -3,7 +3,11 @@
   session_start();
   require "./config/connection.php";
 
-  $keyword = $_GET["keyword"];
+  $keyword = $_GET["keyword"];  
+  $sort = $_GET["sort"];  
+  if ($sort == "hari"){
+    $sort = "field(hari, 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu')";
+  }
   $query = "SELECT JA.id, hari, waktu_mulai, waktu_selesai, kelas, ruang, jumlah_jam, tahun_ajaran, semester, mata_kuliah, nama FROM JADWAL AS JA JOIN MATA_KULIAH AS MK ON MK.ID = JA.MATA_KULIAH_ID JOIN DOSEN AS DS ON DS.ID = JA.DOSEN_ID WHERE
   hari LIKE '%$keyword%' OR
   -- waktu_mulai LIKE '%$keyword%' OR
@@ -14,7 +18,8 @@
   tahun_ajaran LIKE '%$keyword%' OR
   semester LIKE '%$keyword%' OR
   mata_kuliah LIKE '%$keyword%' OR
-  nama LIKE '%$keyword%'";
+  nama LIKE '%$keyword%'
+  ORDER BY $sort";
 
   $jadwal = mysqli_query($conn, $query);
 ?>

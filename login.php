@@ -9,35 +9,6 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
   <script src="source/script.js" defer></script>
 </head>
-<?php
-  session_start();
-  require "config/connection.php";
-  if(isset($_POST["login"])){
-    $username = $_POST["username"];
-    $password = $_POST["password"];
-    $captcha = $_POST["captcha"];
-    $result = mysqli_query($conn, "SELECT * FROM user WHERE username = '$username'");
-    if(mysqli_num_rows($result) > 0 && $captcha == $_SESSION["captcha"]){
-      $row = mysqli_fetch_assoc($result);
-      if(password_verify($password, $row["password"])){
-        $_SESSION["login"] = true;
-        $_SESSION["username"] = $username;
-
-        header("Location: index.php");
-        exit;
-      }
-    }
-
-    if($captcha != $_SESSION["captcha"]){
-      $error["status"] = true;
-      $error["message"] = "Captcha tidak sesuai!";
-    } else {
-      $error["status"] = true;
-      $error["message"] = "Username/Password yang anda masukkan tidak sesuai!";
-    }
-  }
-?>
-
 <body class="vh-100 d-flex justify-content-center align-items-center p-5"
 style='background: hsla(212, 35%, 58%, 1);
 background: linear-gradient(90deg, hsla(212, 35%, 58%, 1) 0%, hsla(218, 32%, 80%, 1) 100%);
@@ -67,7 +38,7 @@ filter: progid: DXImageTransform.Microsoft.gradient( startColorstr="#6D90B9", en
       </div>
 
       <div class="mb-3">
-        <button class="btn btn-primary w-100"  name="login" id="login">Login</button>
+        <button class="btn btn-primary w-100" name="login" id="login">Login</button>
       </div>
       <div>
         <a href="index.php" class="btn btn-success w-100">Home</a>

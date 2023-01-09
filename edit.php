@@ -74,9 +74,9 @@
 
         <label for="kelas" class="form-label">Waktu</label>
         <div class="input-group mb-3">
-          <input type="text" class="form-control" placeholder="00.00" name="waktu_mulai" id="waktu_mulai" value="<?= $waktu_mulai ?>">
+          <input type="time" class="form-control" placeholder="00.00" name="waktu_mulai" id="waktu_mulai" value="<?= str_replace(".",":",$waktu_mulai) ?>">
           <span class="input-group-text">-</span>
-          <input type="text" class="form-control" placeholder="00.00" name="waktu_selesai" id="waktu_selesai" value="<?= $waktu_selesai ?>">
+          <input type="time" class="form-control" placeholder="00.00" name="waktu_selesai" id="waktu_selesai" value="<?= str_replace(".",":",$waktu_selesai) ?>">
         </div>
 
         <label for="kelas" class="form-label">Kelas</label>
