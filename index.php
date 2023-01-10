@@ -115,13 +115,20 @@
 
     <!-- Excel -->
     <?php if(isset($_SESSION["login"])) : ?>
-      <div class="container d-flex justify-content-center">
-        <form action="function/upload_file.php" method="POST" enctype="multipart/form-data">
+      <div class="container d-flex gap-5 justify-content-center">
+        <form action="function/upload_excel.php" method="POST" enctype="multipart/form-data">
           <div class="mb-3">
             <label for="excel" class="form-label">Excel</label>
             <input type="file" class="form-control" accept=".xls,.xlsx" id="excel" name="excel" style="width: min-content;" required>
           </div>
           <button type="submit" class="btn btn-primary">Upload Excel</button>
+        </form>
+        <form action="function/upload_json.php" method="POST" enctype="multipart/form-data">
+          <div class="mb-3">
+            <label for="json" class="form-label">JSON</label>
+            <input type="file" class="form-control" accept=".json" id="json" name="json" style="width: min-content;" required>
+          </div>
+          <button type="submit" class="btn btn-primary">Upload JSON</button>
         </form>
       </div>
     <?php endif ?>

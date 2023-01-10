@@ -20,7 +20,7 @@
   $sheet = $spreadsheet->getSheet($spreadsheet->getFirstSheetIndex());
   $data = $sheet->toArray();
 
-  unlink("../source/temp_excel.xlsx");
+  unlink("../source/temp_excel.$ext");
 
   $header = true;
   // output the data to the console, so you can see what there is.
@@ -53,7 +53,7 @@
 
 
       //Mata Kuliah
-      $mata_kuliah = ucfirst($col[4]);
+      $mata_kuliah = ucwords($col[4]);
       $query = "SELECT * FROM mata_kuliah WHERE mata_kuliah = '$mata_kuliah'";
       $result = mysqli_query($conn, $query);
 
