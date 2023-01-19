@@ -22,28 +22,47 @@
     $matkul = mysqli_query($conn, $query);
 
     //Search and sort
-    $keyword = isset($_GET["keyword"]) ? $_GET["keyword"] : "";  
+    $hari = isset($_GET["hari"]) ? $_GET["hari"] : "";
+    $kelas = isset($_GET["kelas"]) ? $_GET["kelas"] : "";  
+    $ruang = isset($_GET["ruang"]) ? $_GET["ruang"] : "";  
+    $mata_kuliah = isset($_GET["mata_kuliah"]) ? $_GET["mata_kuliah"] : "";  
+    $nama_dosen = isset($_GET["nama_dosen"]) ? $_GET["nama_dosen"] : "";  
+    // $keyword = isset($_GET["keyword"]) ? $_GET["keyword"] : "";  
     $sort = isset($_GET["sort"]) ? $_GET["sort"] : "";
     $sortBy = isset($_GET["sortby"]) ? $_GET["sortby"] : "asc";
 
     $query = "SELECT JA.id, hari, waktu_mulai, waktu_selesai, kelas, ruang, jumlah_jam, tahun_ajaran, semester, mata_kuliah, nama FROM JADWAL AS JA JOIN MATA_KULIAH AS MK ON MK.ID = JA.MATA_KULIAH_ID JOIN DOSEN AS DS ON DS.ID = JA.DOSEN_ID";
     
-    if($keyword != ""){
-      $query .= " WHERE
-      hari LIKE '%$keyword%' OR
-      kelas LIKE '%$keyword%' OR
-      ruang LIKE '%$keyword%' OR
-      jumlah_jam LIKE '%$keyword%' OR
-      tahun_ajaran LIKE '%$keyword%' OR
-      semester LIKE '%$keyword%' OR
-      mata_kuliah LIKE '%$keyword%' OR
-      nama LIKE '%$keyword%'";
+    if($hari != "" || $kelas != ""  || $ruang != ""  || $mata_kuliah != ""  || $nama_dosen != ""){
+      $query .= " WHERE ";
+
+      if($hari != ""){
+        $queryLike[] = "hari LIKE '%$hari%'";
+      }
+      if($kelas != ""){
+        $queryLike[] = "kelas LIKE '%$kelas%'";
+      }
+      if($ruang != ""){
+        $queryLike[] = "ruang LIKE '%$ruang%'";
+      }
+      if($mata_kuliah != ""){
+        $queryLike[] = "mata_kuliah LIKE '%$mata_kuliah%'";
+      }
+      if($nama_dosen != ""){
+        $queryLike[] = "nama LIKE '%$nama_dosen%'";
+      }
+      $query .= implode(" OR ", $queryLike);
+      
     }
+
+    //jumlah_jam LIKE '%$keyword%' OR
+    // tahun_ajaran LIKE '%$keyword%' OR
+    // semester LIKE '%$keyword%' OR
 
     $jadwal = mysqli_query($conn, $query);
     if(mysqli_num_rows($jadwal) <= 0){
-      $keyword = "";
-      $query = "SELECT JA.id, hari, waktu_mulai, waktu_selesai, kelas, ruang, jumlah_jam, tahun_ajaran, semester, mata_kuliah, nama FROM JADWAL AS JA JOIN MATA_KULIAH AS MK ON MK.ID = JA.MATA_KULIAH_ID JOIN DOSEN AS DS ON DS.ID = JA.DOSEN_ID";
+      // $query = "SELECT JA.id, hari, waktu_mulai, waktu_selesai, kelas, ruang, jumlah_jam, tahun_ajaran, semester, mata_kuliah, nama FROM JADWAL AS JA JOIN MATA_KULIAH AS MK ON MK.ID = JA.MATA_KULIAH_ID JOIN DOSEN AS DS ON DS.ID = JA.DOSEN_ID";
+      $notFound = true;
     };
 
 
@@ -54,11 +73,10 @@
         $query .= " ORDER BY $sort $sortBy";
       }
     }
-
     $jadwal = mysqli_query($conn, $query);
 
     //Paginasi
-    $per_page = 15;
+    $per_page = 10;
     $data_count = mysqli_num_rows($jadwal);
     $total_page = ceil($data_count / $per_page);
     $current_page = isset($_GET["halaman"]) ? $_GET["halaman"] : 1;
@@ -138,10 +156,41 @@
       <div class="row mt-1">
         
         <!-- Search -->
-        <div class="col-4" style="min-width: 15rem;">
-          <form method="GET">
-          <input type="text" class="form-control" name="keyword" id="search" placeholder="Pencarian" autocomplete="off" value="<?= $keyword ?>">
+        <div class="mb-3" style="min-width: 15rem;">
+          <form method="GET" class="container gap-2">
+            <div class="row">
+              <div class="col">
+                <label for="hari" class="form-label">Hari</label>
+                <input type="text" class="form-control" name="hari" id="hari" placeholder="Pencarian" autocomplete="off" value="<?= $hari ?>">
+              </div>
+
+              <div class="col">
+                <label for="kelas" class="form-label">Kelas</label>
+                <input type="text" class="form-control" name="kelas" id="kelas" placeholder="Pencarian" autocomplete="off" value="<?= $kelas ?>">
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col">
+                <label for="ruang" class="form-label">Ruang</label>
+                <input type="text" class="form-control" name="ruang" id="ruang" placeholder="Pencarian" autocomplete="off" value="<?= $ruang ?>">
+              </div>
+
+              <div class="col">
+                <label for="mata_kuliah" class="form-label">Mata Kuliah</label>
+                <input type="text" class="form-control" name="mata_kuliah" id="mata_kuliah" placeholder="Pencarian" autocomplete="off" value="<?= $mata_kuliah ?>">
+              </div>
+              
+              <div class="col">
+                <label for="nama_dosen" class="form-label">Nama Dosen</label>
+                <input type="text" class="form-control" name="nama_dosen" id="nama_dosen" placeholder="Pencarian" autocomplete="off" value="<?= $nama_dosen ?>">
+              </div>
+            </div>
+
+
+
         </div>
+
 
         <!-- Sort Option -->
         <div class="col">
@@ -166,8 +215,8 @@
         
         <!-- Search And Clear Button -->
         <div class="col d-flex align-items-center flex">
-          <button type="submit" class="btn btn-primary" style="margin-right: 0.5rem;">Cari</button>
-          <a class="btn btn-primary" href="index.php">Clear</a>
+          <button type="submit" class="btn btn-primary px-4" style="margin-right: 0.5rem;">Cari</button>
+          <a class="btn btn-primary px-4" href="index.php">Clear</a>
           </form>
         </div>
 
@@ -237,6 +286,13 @@
               <?php endif ?>
             </tr>
             <?php endwhile ?>
+            <?php if(isset($notFound)): ?>
+              <tr>
+                <td colspan="11" class="table-light">
+                  <h3>Data tidak ditemukan!</h3>
+                </td>
+              </tr>
+            <?php endif ?>
           </tbody>
         </table>
       </div>
@@ -247,19 +303,29 @@
       <nav aria-label="Page navigation">
         <ul class="pagination">
           <!-- Previous -->
+          <?php
+              $paginateQuery = "";
+              $paginateQuery .= $hari != "" ? "&hari=$hari" : "";
+              $paginateQuery .= $kelas != "" ? "&kelas=$kelas" : "";
+              $paginateQuery .= $ruang != "" ? "&ruang=$ruang" : "";
+              $paginateQuery .= $mata_kuliah != "" ? "&mata_kuliah=$mata_kuliah" : "";
+              $paginateQuery .= $nama_dosen != "" ? "&nama_dosen=$nama_dosen" : "";
+            ?>
+
           <li class="page-item">
             <a class="page-link <?= $current_page-1 < 1 ? "disabled" : "" ?>"
-            href="index.php?halaman=<?= $current_page-1 ?><?= $keyword != "" ? "&keyword=$keyword" : "" ?><?= $sort != "" ? "&sort=$sort" : "" ?>&<?= $sortBy != "" ? "&sortby=$sortBy" : "" ?>">
+            href="index.php?halaman=<?= $current_page-1 ?><?= $paginateQuery ?><?= $sort != "" ? "&sort=$sort" : "" ?>&<?= $sortBy != "" ? "&sortby=$sortBy" : "" ?>">
               Previous
             </a>
           </li>
 
           <!-- If Less Than 6-->
           <?php if($total_page <= 5) :?>
+
             <?php for($i = 1; $i <= $total_page; $i++) : ?>
               <li class="page-item">
                 <a class="page-link <?= $current_page == $i ? "active" : "" ?>"
-                href="index.php?halaman=<?= $i ?><?= $keyword != "" ? "&keyword=$keyword" : "" ?><?= $sort != "" ? "&sort=$sort" : "" ?>&<?= $sortBy != "" ? "&sortby=$sortBy" : "" ?>">
+                href="index.php?halaman=<?= $i ?><?= $paginateQuery ?><?= $sort != "" ? "&sort=$sort" : "" ?>&<?= $sortBy != "" ? "&sortby=$sortBy" : "" ?>">
                   <?= $i ?>
                 </a>
               </li>
@@ -273,20 +339,20 @@
               <?php for($i = 1; $i <= 4; $i++) : ?>
               <li class="page-item">
                 <a class="page-link <?= $current_page == $i ? "active" : "" ?>"
-                href="index.php?halaman=<?= $i ?><?= $keyword != "" ? "&keyword=$keyword" : "" ?><?= $sort != "" ? "&sort=$sort" : "" ?>&<?= $sortBy != "" ? "&sortby=$sortBy" : "" ?>">
+                href="index.php?halaman=<?= $i ?><?= $paginateQuery ?><?= $sort != "" ? "&sort=$sort" : "" ?>&<?= $sortBy != "" ? "&sortby=$sortBy" : "" ?>">
                   <?= $i ?>
                 </a>
               </li>
               <?php endfor ?>
               <li class="page-item">
                 <a class="page-link"
-                href="index.php?halaman=<?= 5 ?><?= $keyword != "" ? "&keyword=$keyword" : "" ?><?= $sort != "" ? "&sort=$sort" : "" ?>&<?= $sortBy != "" ? "&sortby=$sortBy" : "" ?>">
+                href="index.php?halaman=<?= 5 ?><?= $paginateQuery ?><?= $sort != "" ? "&sort=$sort" : "" ?>&<?= $sortBy != "" ? "&sortby=$sortBy" : "" ?>">
                   <?= "..." ?>
                 </a>
               </li>
               <li class="page-item">
                 <a class="page-link <?= $current_page == $total_page ? "active" : "" ?>"
-                href="index.php?halaman=<?= $total_page ?><?= $keyword != "" ? "&keyword=$keyword" : "" ?><?= $sort != "" ? "&sort=$sort" : "" ?>&<?= $sortBy != "" ? "&sortby=$sortBy" : "" ?>">
+                href="index.php?halaman=<?= $total_page ?><?= $paginateQuery ?><?= $sort != "" ? "&sort=$sort" : "" ?>&<?= $sortBy != "" ? "&sortby=$sortBy" : "" ?>">
                   <?= $total_page ?>
                 </a>
               </li>
@@ -296,33 +362,33 @@
             <?php if($current_page > 3 && $current_page < $total_page - 2): ?>
               <li class="page-item">
                 <a class="page-link"
-                href="index.php?halaman=<?= 1 ?><?= $keyword != "" ? "&keyword=$keyword" : "" ?><?= $sort != "" ? "&sort=$sort" : "" ?>&<?= $sortBy != "" ? "&sortby=$sortBy" : "" ?>">
+                href="index.php?halaman=<?= 1 ?><?= $paginateQuery ?><?= $sort != "" ? "&sort=$sort" : "" ?>&<?= $sortBy != "" ? "&sortby=$sortBy" : "" ?>">
                   <?= 1 ?>
                 </a>
               </li>
               <li class="page-item">
                 <a class="page-link"
-                href="index.php?halaman=<?= $current_page - 2 ?><?= $keyword != "" ? "&keyword=$keyword" : "" ?><?= $sort != "" ? "&sort=$sort" : "" ?>&<?= $sortBy != "" ? "&sortby=$sortBy" : "" ?>">
+                href="index.php?halaman=<?= $current_page - 2 ?><?= $paginateQuery ?><?= $sort != "" ? "&sort=$sort" : "" ?>&<?= $sortBy != "" ? "&sortby=$sortBy" : "" ?>">
                   <?= "..." ?>
                 </a>
               </li>
               <?php for($i = $current_page-1; $i <= $current_page+1; $i++) : ?>
               <li class="page-item">
                 <a class="page-link <?= $current_page == $i ? "active" : "" ?>"
-                href="index.php?halaman=<?= $i ?><?= $keyword != "" ? "&keyword=$keyword" : "" ?><?= $sort != "" ? "&sort=$sort" : "" ?>&<?= $sortBy != "" ? "&sortby=$sortBy" : "" ?>">
+                href="index.php?halaman=<?= $i ?><?= $paginateQuery ?><?= $sort != "" ? "&sort=$sort" : "" ?>&<?= $sortBy != "" ? "&sortby=$sortBy" : "" ?>">
                   <?= $i ?>
                 </a>
               </li>
               <?php endfor ?>
               <li class="page-item">
                 <a class="page-link"
-                href="index.php?halaman=<?= $current_page + 2 ?><?= $keyword != "" ? "&keyword=$keyword" : "" ?><?= $sort != "" ? "&sort=$sort" : "" ?>&<?= $sortBy != "" ? "&sortby=$sortBy" : "" ?>">
+                href="index.php?halaman=<?= $current_page + 2 ?><?= $paginateQuery ?><?= $sort != "" ? "&sort=$sort" : "" ?>&<?= $sortBy != "" ? "&sortby=$sortBy" : "" ?>">
                   <?= "..." ?>
                 </a>
               </li>
               <li class="page-item">
                 <a class="page-link <?= $current_page == $total_page ? "active" : "" ?>"
-                href="index.php?halaman=<?= $total_page ?><?= $keyword != "" ? "&keyword=$keyword" : "" ?><?= $sort != "" ? "&sort=$sort" : "" ?>&<?= $sortBy != "" ? "&sortby=$sortBy" : "" ?>">
+                href="index.php?halaman=<?= $total_page ?><?= $paginateQuery ?><?= $sort != "" ? "&sort=$sort" : "" ?>&<?= $sortBy != "" ? "&sortby=$sortBy" : "" ?>">
                   <?= $total_page ?>
                 </a>
               </li>
@@ -332,27 +398,27 @@
             <?php if($current_page >= $total_page - 2): ?>
               <li class="page-item">
                 <a class="page-link"
-                href="index.php?halaman=<?= 1 ?><?= $keyword != "" ? "&keyword=$keyword" : "" ?><?= $sort != "" ? "&sort=$sort" : "" ?>&<?= $sortBy != "" ? "&sortby=$sortBy" : "" ?>">
+                href="index.php?halaman=<?= 1 ?><?= $paginateQuery ?><?= $sort != "" ? "&sort=$sort" : "" ?>&<?= $sortBy != "" ? "&sortby=$sortBy" : "" ?>">
                   <?= 1 ?>
                 </a>
               </li>
               <li class="page-item">
                 <a class="page-link"
-                href="index.php?halaman=<?= $total_page-4 ?><?= $keyword != "" ? "&keyword=$keyword" : "" ?><?= $sort != "" ? "&sort=$sort" : "" ?>&<?= $sortBy != "" ? "&sortby=$sortBy" : "" ?>">
+                href="index.php?halaman=<?= $total_page-4 ?><?= $paginateQuery ?><?= $sort != "" ? "&sort=$sort" : "" ?>&<?= $sortBy != "" ? "&sortby=$sortBy" : "" ?>">
                   <?= "..." ?>
                 </a>
               </li>
               <?php for($i = $total_page-3; $i <= $total_page-1; $i++) : ?>
               <li class="page-item">
                 <a class="page-link <?= $current_page == $i ? "active" : "" ?>"
-                href="index.php?halaman=<?= $i ?><?= $keyword != "" ? "&keyword=$keyword" : "" ?><?= $sort != "" ? "&sort=$sort" : "" ?>&<?= $sortBy != "" ? "&sortby=$sortBy" : "" ?>">
+                href="index.php?halaman=<?= $i ?><?= $paginateQuery ?><?= $sort != "" ? "&sort=$sort" : "" ?>&<?= $sortBy != "" ? "&sortby=$sortBy" : "" ?>">
                   <?= $i ?>
                 </a>
               </li>
               <?php endfor ?>
               <li class="page-item">
                 <a class="page-link <?= $current_page == $total_page ? "active" : "" ?>"
-                href="index.php?halaman=<?= $total_page ?><?= $keyword != "" ? "&keyword=$keyword" : "" ?><?= $sort != "" ? "&sort=$sort" : "" ?>&<?= $sortBy != "" ? "&sortby=$sortBy" : "" ?>">
+                href="index.php?halaman=<?= $total_page ?><?= $paginateQuery ?><?= $sort != "" ? "&sort=$sort" : "" ?>&<?= $sortBy != "" ? "&sortby=$sortBy" : "" ?>">
                   <?= $total_page ?>
                 </a>
               </li>
@@ -361,7 +427,7 @@
           <?php endif ?>
           <!-- Next -->
           <li class="page-item <?= $current_page+1 > $total_page ? "disabled" : "" ?>">
-            <a class="page-link" href="index.php?halaman=<?= $current_page+1 ?><?= $keyword != "" ? "&keyword=$keyword" : "" ?><?= $sort != "" ? "&sort=$sort" : "" ?>&<?= $sortBy != "" ? "&sortby=$sortBy" : "" ?>">
+            <a class="page-link" href="index.php?halaman=<?= $current_page+1 ?><?= $paginateQuery ?><?= $sort != "" ? "&sort=$sort" : "" ?>&<?= $sortBy != "" ? "&sortby=$sortBy" : "" ?>">
               Next
             </a>
           </li>
